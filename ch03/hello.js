@@ -3,7 +3,8 @@ var Hello = {
     start_time: null,
 
     log: function (msg) {
-        $('#log').append("<p>" + msg + "</p>");
+//        $('#log').append("<p>" + msg + "</p>");
+        console.log(msg);
     },
 
     send_ping: function (to) {
@@ -12,7 +13,7 @@ var Hello = {
             type: "get",
             id: "ping1"}).c("ping", {xmlns: "urn:xmpp:ping"});
 
-        Hello.log("Sending ping to " + to + ".");
+        console.log("Sending ping to " + to + ".");
 
         Hello.start_time = (new Date()).getTime();
         Hello.connection.send(ping);
@@ -20,7 +21,7 @@ var Hello = {
 
     handle_pong: function (iq) {
         var elapsed = (new Date()).getTime() - Hello.start_time;
-        Hello.log("Received pong from server in " + elapsed + "ms.");
+        console.log("Received pong from server in " + elapsed + "ms.");
 
         Hello.connection.disconnect();
         
@@ -65,7 +66,7 @@ $(document).bind('connect', function (ev, data) {
 
 $(document).bind('connected', function () {
     // inform the user
-    Hello.log("Connection established.");
+    console.log("Connection established.");
 
     Hello.connection.addHandler(Hello.handle_pong, null, "iq", null, "ping1");
 
@@ -76,7 +77,7 @@ $(document).bind('connected', function () {
 });
 
 $(document).bind('disconnected', function () {
-    Hello.log("Connection terminated.");
+    console.log("Connection terminated.");
 
     // remove dead connection object
     Hello.connection = null;
