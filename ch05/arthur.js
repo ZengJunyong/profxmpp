@@ -61,7 +61,7 @@ $(function () {
             var text = $(this).val();
             $(this).val('');
 
-            var msg = $msg({to: 'yong2@jabber.me', type: 'chat'})
+            var msg = $msg({to: 'zengjunyong@gmail.com', type: 'chat'})
                 .c('body').t(text);
             Arthur.connection.send(msg);
         }
@@ -74,10 +74,10 @@ $(document).bind('connect', function (ev, data) {
 
 
     conn.xmlInput = function (body) {
-        console.log(body);
+//        console.log(body);
     };
     conn.xmlOutput = function (body) {
-        console.log(body);
+//        console.log(body);
     };
 
     conn.connect(data.jid, data.password, function (status) {

@@ -2,12 +2,17 @@ var Gab = {
     connection: null,
 
     jid_to_id: function (jid) {
-        return Strophe.getBareJidFromJid(jid)
+        var id = Strophe.getBareJidFromJid(jid)
             .replace(/@/g, "-")
-            .replace(/\./g, "-");
+            .replace(/\./g, "-")
+//        console.log('jid_to_id : ', jid, id);
+        return id;
     },
 
     on_roster: function (iq) {
+
+        console.log('on_roster : ', iq);
+
         $(iq).find('item').each(function () {
             var jid = $(this).attr('jid');
             var name = $(this).attr('name') || jid;
@@ -16,12 +21,12 @@ var Gab = {
             var jid_id = Gab.jid_to_id(jid);
 
             var contact = $("<li id='" + jid_id + "'>" +
-                            "<div class='roster-contact offline'>" +
-                            "<div class='roster-name'>" +
-                            name +
-                            "</div><div class='roster-jid'>" +
-                            jid +
-                            "</div></div></li>");
+                "<div class='roster-contact offline'>" +
+                "<div class='roster-name'>" +
+                name +
+                "</div><div class='roster-jid'>" +
+                jid +
+                "</div></div></li>");
 
             Gab.insert_contact(contact);
         });
@@ -34,6 +39,9 @@ var Gab = {
     pending_subscriber: null,
 
     on_presence: function (presence) {
+
+        console.log('on_presence : ', presence);
+
         var ptype = $(presence).attr('type');
         var from = $(presence).attr('from');
         var jid_id = Gab.jid_to_id(from);
@@ -73,6 +81,9 @@ var Gab = {
     },
 
     on_roster_changed: function (iq) {
+
+        console.log('on_roster_changed : ', iq);
+
         $(iq).find('item').each(function () {
             var sub = $(this).attr('subscription');
             var jid = $(this).attr('jid');
@@ -85,7 +96,7 @@ var Gab = {
             } else {
                 // contact is being added or modified
                 var contact_html = "<li id='" + jid_id + "'>" +
-                    "<div class='" + 
+                    "<div class='" +
                     ($('#' + jid_id).attr('class') || "roster-contact offline") +
                     "'>" +
                     "<div class='roster-name'>" +
@@ -106,6 +117,9 @@ var Gab = {
     },
 
     on_message: function (message) {
+
+        console.log('on_message : ', message);
+
         var full_jid = $(message).attr('from');
         var jid = Strophe.getBareJidFromJid(full_jid);
         var jid_id = Gab.jid_to_id(jid);
@@ -113,10 +127,10 @@ var Gab = {
         if ($('#chat-' + jid_id).length === 0) {
             $('#chat-area').tabs('add', '#chat-' + jid_id, jid);
             $('#chat-' + jid_id).append(
-                "<div class='chat-messages'></div>" +
-                "<input type='text' class='chat-input'>");
+                    "<div class='chat-messages'></div>" +
+                    "<input type='text' class='chat-input'>");
         }
-        
+
         $('#chat-' + jid_id).data('jid', full_jid);
 
         $('#chat-area').tabs('select', '#chat-' + jid_id);
@@ -125,9 +139,9 @@ var Gab = {
         var composing = $(message).find('composing');
         if (composing.length > 0) {
             $('#chat-' + jid_id + ' .chat-messages').append(
-                "<div class='chat-event'>" +
-                Strophe.getNodeFromJid(jid) +
-                " is typing...</div>");
+                    "<div class='chat-event'>" +
+                    Strophe.getNodeFromJid(jid) +
+                    " is typing...</div>");
 
             Gab.scroll_chat(jid_id);
         }
@@ -163,11 +177,11 @@ var Gab = {
 
             // add the new message
             $('#chat-' + jid_id + ' .chat-messages').append(
-                "<div class='chat-message'>" +
-                "&lt;<span class='chat-name'>" +
-                Strophe.getNodeFromJid(jid) +
-                "</span>&gt;<span class='chat-text'>" +
-                "</span></div>");
+                    "<div class='chat-message'>" +
+                    "&lt;<span class='chat-name'>" +
+                    Strophe.getNodeFromJid(jid) +
+                    "</span>&gt;<span class='chat-text'>" +
+                    "</span></div>");
 
             $('#chat-' + jid_id + ' .chat-message:last .chat-text')
                 .append(body);
@@ -179,12 +193,18 @@ var Gab = {
     },
 
     scroll_chat: function (jid_id) {
+
+        console.log('scroll_chat : ', jid_id);
+
         var div = $('#chat-' + jid_id + ' .chat-messages').get(0);
         div.scrollTop = div.scrollHeight;
     },
 
 
     presence_value: function (elem) {
+
+//        console.log('presence_value : ', elem);
+
         if (elem.hasClass('online')) {
             return 2;
         } else if (elem.hasClass('away')) {
@@ -195,9 +215,12 @@ var Gab = {
     },
 
     insert_contact: function (elem) {
+
+//        console.log('insert_contact : ', elem);
+
         var jid = elem.find('.roster-jid').text();
         var pres = Gab.presence_value(elem.find('.roster-contact'));
-        
+
         var contacts = $('#roster-area li');
 
         if (contacts.length > 0) {
@@ -237,11 +260,14 @@ $(document).ready(function () {
         title: 'Connect to XMPP',
         buttons: {
             "Connect": function () {
+
+                console.log('Connect');
+                
                 $(document).trigger('connect', {
                     jid: $('#jid').val().toLowerCase(),
                     password: $('#password').val()
                 });
-                
+
                 $('#password').val('');
                 $(this).dialog('close');
             }
@@ -255,6 +281,9 @@ $(document).ready(function () {
         title: 'Add a Contact',
         buttons: {
             "Add": function () {
+
+                console.log('Add');
+                
                 $(document).trigger('contact_added', {
                     jid: $('#contact-jid').val().toLowerCase(),
                     name: $('#contact-name').val()
@@ -262,7 +291,7 @@ $(document).ready(function () {
 
                 $('#contact-jid').val('');
                 $('#contact-name').val('');
-                
+
                 $(this).dialog('close');
             }
         }
@@ -279,6 +308,9 @@ $(document).ready(function () {
         title: 'Subscription Request',
         buttons: {
             "Deny": function () {
+
+                console.log('Deny');
+                
                 Gab.connection.send($pres({
                     to: Gab.pending_subscriber,
                     "type": "unsubscribed"}));
@@ -288,6 +320,9 @@ $(document).ready(function () {
             },
 
             "Approve": function () {
+
+                console.log('Approve');
+                
                 Gab.connection.send($pres({
                     to: Gab.pending_subscriber,
                     "type": "subscribed"}));
@@ -295,7 +330,7 @@ $(document).ready(function () {
                 Gab.connection.send($pres({
                     to: Gab.pending_subscriber,
                     "type": "subscribe"}));
-                
+
                 Gab.pending_subscriber = null;
 
                 $(this).dialog('close');
@@ -306,6 +341,9 @@ $(document).ready(function () {
     $('#chat-area').tabs().find('.ui-tabs-nav').sortable({axis: 'x'});
 
     $('.roster-contact').live('click', function () {
+
+        console.log('.roster-contact click');
+        
         var jid = $(this).find(".roster-jid").text();
         var name = $(this).find(".roster-name").text();
         var jid_id = Gab.jid_to_id(jid);
@@ -313,8 +351,8 @@ $(document).ready(function () {
         if ($('#chat-' + jid_id).length === 0) {
             $('#chat-area').tabs('add', '#chat-' + jid_id, name);
             $('#chat-' + jid_id).append(
-                "<div class='chat-messages'></div>" +
-                "<input type='text' class='chat-input'>");
+                    "<div class='chat-messages'></div>" +
+                    "<input type='text' class='chat-input'>");
             $('#chat-' + jid_id).data('jid', jid);
         }
         $('#chat-area').tabs('select', '#chat-' + jid_id);
@@ -323,6 +361,9 @@ $(document).ready(function () {
     });
 
     $('.chat-input').live('keypress', function (ev) {
+
+        console.log('.chat-input keypress');
+        
         var jid = $(this).parent().data('jid');
 
         if (ev.which === 13) {
@@ -331,18 +372,18 @@ $(document).ready(function () {
             var body = $(this).val();
 
             var message = $msg({to: jid,
-                                "type": "chat"})
+                "type": "chat"})
                 .c('body').t(body).up()
                 .c('active', {xmlns: "http://jabber.org/protocol/chatstates"});
             Gab.connection.send(message);
 
             $(this).parent().find('.chat-messages').append(
-                "<div class='chat-message'>&lt;" +
-                "<span class='chat-name me'>" + 
-                Strophe.getNodeFromJid(Gab.connection.jid) +
-                "</span>&gt;<span class='chat-text'>" +
-                body +
-                "</span></div>");
+                    "<div class='chat-message'>&lt;" +
+                    "<span class='chat-name me'>" +
+                    Strophe.getNodeFromJid(Gab.connection.jid) +
+                    "</span>&gt;<span class='chat-text'>" +
+                    body +
+                    "</span></div>");
             Gab.scroll_chat(Gab.jid_to_id(jid));
 
             $(this).val('');
@@ -371,22 +412,25 @@ $(document).ready(function () {
         title: 'Start a Chat',
         buttons: {
             "Start": function () {
+
+                console.log('Start');
+
                 var jid = $('#chat-jid').val().toLowerCase();
                 var jid_id = Gab.jid_to_id(jid);
 
                 $('#chat-area').tabs('add', '#chat-' + jid_id, jid);
                 $('#chat-' + jid_id).append(
-                    "<div class='chat-messages'></div>" +
-                    "<input type='text' class='chat-input'>");
-            
+                        "<div class='chat-messages'></div>" +
+                        "<input type='text' class='chat-input'>");
+
                 $('#chat-' + jid_id).data('jid', jid);
-            
+
                 $('#chat-area').tabs('select', '#chat-' + jid_id);
                 $('#chat-' + jid_id + ' input').focus();
-            
-            
+
+
                 $('#chat-jid').val('');
-                
+
                 $(this).dialog('close');
             }
         }
@@ -401,7 +445,10 @@ $(document).bind('connect', function (ev, data) {
     var conn = new Strophe.Connection(
         'http://bosh.metajack.im:5280/xmpp-httpbind');
 
+    console.log('login as : ', data);
+
     conn.connect(data.jid, data.password, function (status) {
+        console.log('status : ', status);
         if (status === Strophe.Status.CONNECTED) {
             $(document).trigger('connected');
         } else if (status === Strophe.Status.DISCONNECTED) {
@@ -413,17 +460,21 @@ $(document).bind('connect', function (ev, data) {
 });
 
 $(document).bind('connected', function () {
+    console.log('connected');
     var iq = $iq({type: 'get'}).c('query', {xmlns: 'jabber:iq:roster'});
     Gab.connection.sendIQ(iq, Gab.on_roster);
 
     Gab.connection.addHandler(Gab.on_roster_changed,
-                              "jabber:iq:roster", "iq", "set");
+        "jabber:iq:roster", "iq", "set");
 
     Gab.connection.addHandler(Gab.on_message,
-                              null, "message", "chat");
+        null, "message", "chat");
 });
 
 $(document).bind('disconnected', function () {
+
+    console.log('disconnected');
+
     Gab.connection = null;
     Gab.pending_subscriber = null;
 
@@ -435,10 +486,13 @@ $(document).bind('disconnected', function () {
 });
 
 $(document).bind('contact_added', function (ev, data) {
+
+    console.log('contact_added : ', data);
+
     var iq = $iq({type: "set"}).c("query", {xmlns: "jabber:iq:roster"})
         .c("item", data);
     Gab.connection.sendIQ(iq);
-    
+
     var subscribe = $pres({to: data.jid, "type": "subscribe"});
     Gab.connection.send(subscribe);
 });
