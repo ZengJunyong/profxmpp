@@ -2,6 +2,8 @@ var Arthur = {
     connection: null,
 
     handle_message: function (message) {
+        console.log(message);
+
         if ($(message).attr('from').match(/^update@identi.ca/)) {
             var delayed = $(message).find('delay').length > 0;
             var body = $(message).find('html > body').contents();
@@ -59,7 +61,7 @@ $(function () {
             var text = $(this).val();
             $(this).val('');
 
-            var msg = $msg({to: 'update@identi.ca', type: 'chat'})
+            var msg = $msg({to: 'yong2@jabber.me', type: 'chat'})
                 .c('body').t(text);
             Arthur.connection.send(msg);
         }
@@ -69,6 +71,14 @@ $(function () {
 $(document).bind('connect', function (ev, data) {
     var conn = new Strophe.Connection(
         "http://bosh.metajack.im:5280/xmpp-httpbind");
+
+
+    conn.xmlInput = function (body) {
+        console.log(body);
+    };
+    conn.xmlOutput = function (body) {
+        console.log(body);
+    };
 
     conn.connect(data.jid, data.password, function (status) {
         if (status === Strophe.Status.CONNECTED) {
@@ -82,6 +92,7 @@ $(document).bind('connect', function (ev, data) {
 });
 
 $(document).bind('connected', function () {
+    console.log('connected');
     Arthur.connection.addHandler(Arthur.handle_message,
                                  null, "message", "chat");
     Arthur.connection.send($pres());
