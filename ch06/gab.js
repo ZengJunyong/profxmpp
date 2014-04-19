@@ -194,7 +194,7 @@ var Gab = {
 
     scroll_chat: function (jid_id) {
 
-        console.log('scroll_chat : ', jid_id);
+//        console.log('scroll_chat : ', jid_id);
 
         var div = $('#chat-' + jid_id + ' .chat-messages').get(0);
         div.scrollTop = div.scrollHeight;
@@ -442,8 +442,18 @@ $(document).ready(function () {
 });
 
 $(document).bind('connect', function (ev, data) {
-    var conn = new Strophe.Connection(
-        'http://bosh.metajack.im:5280/xmpp-httpbind');
+//    var service = 'http://bosh.metajack.im:5280/xmpp-httpbind';
+    var service = 'http://127.0.0.1:7070/http-bind/';
+
+    var conn = new Strophe.Connection(service);
+
+    conn.xmlInput = function (xml) {
+        console.log(xml);
+    }
+    
+    conn.xmlOutput = function (xml) {
+        console.log(xml);
+    }
 
     console.log('login as : ', data);
 
