@@ -439,62 +439,61 @@ $(document).ready(function () {
     $('#new-chat').click(function () {
         $('#chat_dialog').dialog('open');
     });
-});
 
-$(document).bind('connect', function (ev, data) {
-//    var service = 'http://bosh.metajack.im:5280/xmpp-httpbind';
-//    var service = 'http://127.0.0.1:7070/http-bind/';
-    var service = 'http://xmpp-test.gopaktor.com:7077/http-bind/';
+    var service = 'http://127.0.0.1:7070/http-bind/';
 
     var conn = new Strophe.Connection(service);
 
     conn.xmlInput = function (xml) {
-        console.log(xml);
+//        console.log(xml);
     }
-    
+
     conn.xmlOutput = function (xml) {
-        console.log(xml);
+//        console.log(xml);
     }
+
+    var data =  {jid: "test@127.0.0.1", password: "1"};
 
     console.log('login as : ', data);
 
     conn.connect(data.jid, data.password, function (status) {
         console.log('status : ', status);
         if (status === Strophe.Status.CONNECTED) {
-            $(document).trigger('connected');
+            console.log('connected');
+            var iq = $iq({type: 'get'}).c('query', {xmlns: 'jabber:iq:roster'});
+            Gab.connection.sendIQ(iq, function(iq) {
+                console.log('roster:', iq);
+                Gab.connection.addHandler(function(presence) {
+                    return console.log('presence:', presence);
+                }, null, 'presence');
+                Gab.connection.send($pres());
+            });
+
+//            Gab.connection.addHandler(Gab.on_roster_changed,
+//                "jabber:iq:roster", "iq", "set");
+
+            Gab.connection.addHandler(function(message) {
+                    console.log(message);
+                    return true;
+                },
+                null, "message", "chat");
         } else if (status === Strophe.Status.DISCONNECTED) {
-            $(document).trigger('disconnected');
+//            console.log('disconnected');
+//
+//            Gab.connection = null;
+//            Gab.pending_subscriber = null;
+//
+//            $('#roster-area ul').empty();
+//            $('#chat-area ul').empty();
+//            $('#chat-area div').remove();
+//
+//            $('#login_dialog').dialog('open');
         }
     });
 
     Gab.connection = conn;
 });
 
-$(document).bind('connected', function () {
-    console.log('connected');
-    var iq = $iq({type: 'get'}).c('query', {xmlns: 'jabber:iq:roster'});
-    Gab.connection.sendIQ(iq, Gab.on_roster);
-
-    Gab.connection.addHandler(Gab.on_roster_changed,
-        "jabber:iq:roster", "iq", "set");
-
-    Gab.connection.addHandler(Gab.on_message,
-        null, "message", "chat");
-});
-
-$(document).bind('disconnected', function () {
-
-    console.log('disconnected');
-
-    Gab.connection = null;
-    Gab.pending_subscriber = null;
-
-    $('#roster-area ul').empty();
-    $('#chat-area ul').empty();
-    $('#chat-area div').remove();
-
-    $('#login_dialog').dialog('open');
-});
 
 $(document).bind('contact_added', function (ev, data) {
 
